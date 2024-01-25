@@ -25,8 +25,6 @@ class SecretController extends Controller
     public function add(Request $request): JsonResponse
     {
 
-
-
         $secret = $this->secretService->add(
             [
                 'id' => Str::uuid(),
@@ -34,7 +32,7 @@ class SecretController extends Controller
                 'expires_at' => $request->input('expires_at'),
                 'password' => $request->input('password')
             ]
-        )->json();
+        )->object();
 
         return response()->json($secret);
     }
