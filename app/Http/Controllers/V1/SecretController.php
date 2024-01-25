@@ -23,8 +23,7 @@ class SecretController extends Controller
      */
     public function add(Request $request): JsonResponse
     {
-
-        $secret = $this->secretService->add($request->all())->object();
+        $secret = $this->secretService->add($request->all())->json();
 
         return response()->json($secret);
     }
