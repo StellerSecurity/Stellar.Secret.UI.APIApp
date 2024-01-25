@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\SecretService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Str;
 
 class SecretController extends Controller
 {
@@ -23,7 +24,17 @@ class SecretController extends Controller
      */
     public function add(Request $request): JsonResponse
     {
-        $secret = $this->secretService->add($request->all())->json();
+
+
+
+        $secret = $this->secretService->add(
+            [
+                'id' => Str::uuid(),
+                'message' => $request->input('message'),
+                'expires_at' => $request->input('expires_at'),
+                'password' => $request->input('password')
+            ]
+        )->json();
 
         return response()->json($secret);
     }
