@@ -10,11 +10,11 @@ use Illuminate\Support\Facades\Http;
 class SecretService
 {
 
-    private $baseUrl = "https://stellarsecretapiprod.azurewebsites.net/api/";
+    private string $baseUrl = "https://stellarsecretapiprod.azurewebsites.net/api/";
 
-    private $usernameKey = "APPSETTING_API_USERNAME_STELLAR_SECRET_API";
+    private string $usernameKey = "APPSETTING_API_USERNAME_STELLAR_SECRET_API";
 
-    private $passwordKey = "APPSETTING_API_PASSWORD_STELLAR_SECRET_API";
+    private string $passwordKey = "APPSETTING_API_PASSWORD_STELLAR_SECRET_API";
 
     /**
      * @param string $id
