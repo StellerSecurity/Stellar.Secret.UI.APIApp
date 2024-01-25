@@ -21,29 +21,28 @@ class SecretService
      * @param string $type
      * @return Response
      */
-    public function add(string $username, string $password, string $auth_token): Response
+    public function add(array $data): Response
     {
         $response = Http::withBasicAuth(getenv($this->usernameKey), getenv($this->passwordKey))
-            ->post($this->baseUrl . "v1/wipeusercontroller/add",
-                ['username' => $username, 'password' => $password, 'auth_token' => $auth_token]);
+            ->post($this->baseUrl . "v1/secretcontroller/add", $data);
         return $response;
     }
 
     /**
-     * @param string $auth_token
+     * @param string $id
      * @return PromiseInterface|Response
      */
-    public function findbytoken(string $auth_token): PromiseInterface|Response
+    public function view(string $id): PromiseInterface|Response
     {
         $response = Http::withBasicAuth(getenv($this->usernameKey),getenv($this->passwordKey))
-            ->get($this->baseUrl . "v1/wipeusercontroller/findbytoken?auth_token=" . $auth_token);
+            ->get($this->baseUrl . "v1/secretcontroller/secret?id={$id}");
         return $response;
     }
 
-    public function patch(array $data): PromiseInterface|Response
+    public function delete(string $id): PromiseInterface|Response
     {
         $response = Http::withBasicAuth(getenv($this->usernameKey),getenv($this->passwordKey))
-            ->patch($this->baseUrl . "v1/wipeusercontroller/patch", $data);
+            ->delete($this->baseUrl . "v1/wipeusercontroller/delete?id={$id}");
         return $response;
     }
 
