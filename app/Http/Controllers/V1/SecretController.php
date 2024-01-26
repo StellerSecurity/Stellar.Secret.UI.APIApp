@@ -22,7 +22,7 @@ class SecretController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function add(Request $request): JsonResponse
+    public function add(Request $request)
     {
 
         $secret = $this->secretService->add(
@@ -32,9 +32,9 @@ class SecretController extends Controller
                 'expires_at' => $request->input('expires_at'),
                 'password' => $request->input('password')
             ]
-        )->object();
+        )->body();
 
-        return response()->json($secret);
+        return response($secret);
     }
 
     /**
