@@ -44,7 +44,9 @@ class SecretController extends Controller
     public function view(Request $request): JsonResponse
     {
 
-        $find = $this->secretService->view($request->input('id'))->object();
+        $find = $this->secretService->view(
+            hash("sha512", $request->input('id'))
+        )->object();
 
         return response()->json($find);
     }
