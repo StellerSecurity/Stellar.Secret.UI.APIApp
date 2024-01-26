@@ -27,7 +27,7 @@ class SecretController extends Controller
 
         $secret = $this->secretService->add(
             [
-                'id' => Str::uuid(),
+                'id' => $request->input('id'),
                 'message' => $request->input('message'),
                 'expires_at' => $request->input('expires_at'),
                 'password' => $request->input('password')
