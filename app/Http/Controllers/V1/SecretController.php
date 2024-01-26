@@ -57,7 +57,9 @@ class SecretController extends Controller
      */
     public function delete(Request $request): JsonResponse
     {
-        $delete = $this->secretService->delete($request->input('id'))->object();
+        $delete = $this->secretService->delete(
+            hash("sha512", $request->input('id'))
+        )->object();
 
         return response()->json($delete);
     }
