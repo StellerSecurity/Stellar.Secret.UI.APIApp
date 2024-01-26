@@ -42,7 +42,7 @@ class SecretService
     public function delete(string $id): PromiseInterface|Response
     {
         $response = Http::withBasicAuth(getenv($this->usernameKey),getenv($this->passwordKey))
-            ->delete($this->baseUrl . "v1/wipeusercontroller/delete?id={$id}");
+            ->delete($this->baseUrl . "v1/secretcontroller/delete?id={$id}");
         return $response;
     }
 
