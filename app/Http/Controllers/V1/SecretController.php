@@ -30,7 +30,7 @@ class SecretController extends Controller
         $expires_at = (int) $request->input('expires_at');
 
         // if none is set, expire in 7 days.
-        if($expires_at > 0) {
+        if($expires_at == 0) {
             $expires_at = 24 * 7;
         }
 
