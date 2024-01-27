@@ -45,7 +45,7 @@ class SecretController extends Controller
         $data = [
             'id' => $request->input('id'),
             'message' => $request->input('message'),
-            'expires_at' => null,
+            'expires_at' => $expires_at,
             'password' => $password
         ];
 
