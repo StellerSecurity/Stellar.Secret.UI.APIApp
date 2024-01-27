@@ -66,7 +66,7 @@ class SecretController extends Controller
 
         $find = $this->secretService->view($id)->object();
 
-        if($find === null) {
+        if(!isset($find->id)) {
             return response()->json(['response_code' => 400]);
         }
 
