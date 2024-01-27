@@ -38,7 +38,7 @@ class SecretController extends Controller
                 'id' => $request->input('id'),
                 'message' => $request->input('message'),
                 'expires_at' => $expires_at,
-                'password' => $request->input('password')
+                'password' => hash("sha512", $request->input('password'))
             ]
         )->object();
 
