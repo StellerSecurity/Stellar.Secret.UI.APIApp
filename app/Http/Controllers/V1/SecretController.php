@@ -23,7 +23,7 @@ class SecretController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function add(Request $request): JsonResponse
+    public function add(Request $request)
     {
 
         // in hours.
@@ -42,14 +42,16 @@ class SecretController extends Controller
             $password = hash("sha512", $password);
         }
 
+        $data = [
+            'id' => $request->input('id'),
+            'message' => $request->input('message'),
+            'expires_at' => null,
+            'password' => $password
+        ];
+
         $secret = $this->secretService->add(
-            [
-                'id' => $request->input('id'),
-                'message' => $request->input('message'),
-                'expires_at' => $expires_at,
-                'password' => $password
-            ]
-        )->object();
+            $data
+        )->json();
 
         return response()->json($secret);
     }
