@@ -23,7 +23,7 @@ class SecretController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function add(Request $request)
+    public function add(Request $request): JsonResponse
     {
 
         // in hours.
