@@ -62,9 +62,13 @@ class SecretController extends Controller
 
         $find = $this->secretService->view($id)->object();
 
-        //$this->secretService->delete($id)->object();
+        if($find !== null) {
+            return response()->json(['response_code' => 400]);
+        }
 
-        return response()->json($find);
+        $this->secretService->delete($id)->object();
+
+        return response()->json([$find, 'response_code' => 200]);
     }
 
     /**
