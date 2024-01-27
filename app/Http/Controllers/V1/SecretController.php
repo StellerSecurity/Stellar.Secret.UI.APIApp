@@ -30,8 +30,10 @@ class SecretController extends Controller
         $expires_at = $request->input('expires_at');
 
         if($expires_at > 0 && $expires_at !== null) {
-            $expires_at = Carbon::createFromFormat('Y-m-d H:i:s', date("Y-m-d H:i:s"))->addHours($expires_at);
+            $expires_at = 24 * 7;
         }
+
+        $expires_at = Carbon::createFromFormat('Y-m-d H:i:s', date("Y-m-d H:i:s"))->addHours($expires_at);
 
         $password = $request->input('password');
 
