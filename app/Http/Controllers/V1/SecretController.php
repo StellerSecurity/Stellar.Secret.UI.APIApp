@@ -58,6 +58,10 @@ class SecretController extends Controller
     public function view(Request $request): JsonResponse
     {
 
+        if( $request->input('id') === null) {
+            return response()->json(['response_code' => 400]);
+        }
+
         $id = hash("sha512", $request->input('id'));
 
         $find = $this->secretService->view($id)->object();
