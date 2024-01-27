@@ -70,9 +70,11 @@ class SecretController extends Controller
             return response()->json(['response_code' => 400]);
         }
 
-        $this->secretService->delete($id)->object();
+        $find->response_code = 200;
 
-        return response()->json([$find, 'response_code' => 200]);
+        //$this->secretService->delete($id)->object();
+
+        return response()->json($find);
     }
 
     /**
