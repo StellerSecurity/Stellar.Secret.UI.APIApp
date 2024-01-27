@@ -51,7 +51,7 @@ class SecretController extends Controller
 
         $secret = $this->secretService->add(
             $data
-        )->json();
+        )->object();
 
         return response()->json($secret);
     }
