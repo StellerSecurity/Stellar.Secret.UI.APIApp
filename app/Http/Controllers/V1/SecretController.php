@@ -33,12 +33,18 @@ class SecretController extends Controller
             $expires_at = Carbon::createFromFormat('Y-m-d H:i:s', date("Y-m-d H:i:s"))->addHours($expires_at);
         }
 
+        $password = $request->input('password');
+
+        if($password !== null && strlen($password) > 0) {
+            $password = hash("sha512", $password);
+        }
+
         $secret = $this->secretService->add(
             [
                 'id' => $request->input('id'),
                 'message' => $request->input('message'),
                 'expires_at' => $expires_at,
-                'password' => hash("sha512", $request->input('password'))
+                'password' => $password
             ]
         )->object();
 
@@ -52,9 +58,11 @@ class SecretController extends Controller
     public function view(Request $request): JsonResponse
     {
 
-        $find = $this->secretService->view(
-            hash("sha512", $request->input('id'))
-        )->object();
+        $id = hash("sha512", $request->input('id'));
+
+        $find = $this->secretService->view($id)->object();
+
+        //$this->secretService->delete($id)->object();
 
         return response()->json($find);
     }
