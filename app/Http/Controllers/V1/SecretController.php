@@ -15,7 +15,7 @@ class SecretController extends Controller
 
     private SecretService $secretService;
 
-    private int $default_expire_message_in_hours = 7;
+    private int $default_expire_message_in_days = 7;
 
     public function __construct(SecretService $secretService)
     {
@@ -41,7 +41,7 @@ class SecretController extends Controller
 
         // if none is set, expire in 7 days.
         if($expires_at <= 0) {
-            $expires_at = 24 * $this->default_expire_message_in_hours;
+            $expires_at = 24 * $this->default_expire_message_in_days;
         }
 
         $expires_at = Carbon::createFromFormat('Y-m-d H:i:s', date("Y-m-d H:i:s"))->addHours($expires_at);
