@@ -56,8 +56,7 @@ class SecretController extends Controller
             'id'            => $id,
             'message'       => $message,
             'expires_at'    => $expires_at,
-            'password'      => $password,
-            'response_code' => 200
+            'password'      => $password
         ];
 
         $secret = $this->secretService->add($data)->object();
