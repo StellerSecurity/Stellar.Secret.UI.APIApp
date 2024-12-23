@@ -32,7 +32,7 @@ class SecretController extends Controller
         $id = $request->input("id");
         $message = $request->input("message");
 
-        if(strlen($id) !== 36 || $id === null) {
+        if($id === null) {
             return response()->json(['response_code' => 400]);
         }
 
