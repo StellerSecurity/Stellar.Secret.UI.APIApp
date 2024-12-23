@@ -33,7 +33,7 @@ class SecretController extends Controller
         $message = $request->input("message");
 
         if(strlen($id) !== 36 || $id === null) {
-            return response()->json([]);
+            return response()->json(['response_code' => 400]);
         }
 
         // in hours.
@@ -56,7 +56,8 @@ class SecretController extends Controller
             'id'            => $id,
             'message'       => $message,
             'expires_at'    => $expires_at,
-            'password'      => $password
+            'password'      => $password,
+            'response_code' => 200
         ];
 
         $secret = $this->secretService->add($data)->object();
