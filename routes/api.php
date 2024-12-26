@@ -33,3 +33,4 @@ Route::prefix('v2')->group(function () {
         });
     });
 });
+
