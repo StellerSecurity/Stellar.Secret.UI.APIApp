@@ -24,7 +24,7 @@ Route::prefix('v1')->group(function () {
         });
     });
 
-});
+})->middleware(\Mondago\ApplicationInsights\Middleware\TrackRequest::class);
 
 Route::prefix('v2')->group(function () {
     Route::prefix('secretcontroller')->group(function () {
@@ -33,6 +33,6 @@ Route::prefix('v2')->group(function () {
             Route::post('add', 'add');
         });
     });
-});
+})->middleware(\Mondago\ApplicationInsights\Middleware\TrackRequest::class);
 
 
