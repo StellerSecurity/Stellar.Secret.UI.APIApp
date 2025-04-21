@@ -36,6 +36,10 @@ class SecretController extends Controller
             return response()->json(['response_code' => 400]);
         }
 
+        if(empty($message)) {
+            return response()->json(['response_code' => 400]);
+        }
+
         // in hours.
         $expires_at = (int) $request->input('expires_at');
 
