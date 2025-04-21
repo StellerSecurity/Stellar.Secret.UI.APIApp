@@ -57,9 +57,27 @@ class SecretController extends Controller
         // file upload, the UI will send ID + Content.
         $files = $request->file('files');
 
-        // not a array of files, something is odd.
+        // not an array of files, something is odd.
         if($files !== null && !is_array($files)) {
             return response()->json(['response_code' => 518]);
+        }
+
+        if($files !== null) {
+
+            if(!is_array($files)) {
+                return response()->json(['response_code' => 518]);
+            }
+
+            foreach($files as $file) {
+                if(!isset($file['id'])) {
+                    return response()->json(['response_code' => 519]);
+                }
+
+                if(!isset($file['content'])) {
+                    return response()->json(['response_code' => 520]);
+                }
+            }
+
         }
 
         $data = [
