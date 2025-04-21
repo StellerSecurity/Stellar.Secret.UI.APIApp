@@ -54,11 +54,20 @@ class SecretController extends Controller
         // in V1 we hashed it on the API-side, now the UI does it. (if the user has set the pw).
         $password = $request->input('password');
 
+        // file upload, the UI will send ID + Content.
+        $files = $request->file('files');
+
+        // not a array of files, something is odd.
+        if($files !== null && !is_array($files)) {
+            return response()->json(['response_code' => 518]);
+        }
+
         $data = [
             'id'            => $id,
             'message'       => $message,
             'expires_at'    => $expires_at,
-            'password'      => $password
+            'password'      => $password,
+            'files'         => $files
         ];
 
         $secret = $this->secretService->add($data)->object();
