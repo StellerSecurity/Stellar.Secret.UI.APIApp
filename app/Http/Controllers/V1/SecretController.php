@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\V1;
 
 use App\Http\Controllers\Controller;
+use App\Services\FilesecretService;
 use App\Services\SecretService;
 use Carbon\Carbon;
 use http\Env\Response;
@@ -15,11 +16,14 @@ class SecretController extends Controller
 
     private SecretService $secretService;
 
+    private FilesecretService $filesecretService;
+
     private int $default_expire_message_in_days = 7;
 
-    public function __construct(SecretService $secretService)
+    public function __construct(SecretService $secretService, FilesecretService $filesecretService)
     {
         $this->secretService = $secretService;
+        $this->filesecretService = $filesecretService;
     }
 
     /**
@@ -79,17 +83,27 @@ class SecretController extends Controller
 
         $id = hash("sha512", $id);
 
-        $find = $this->secretService->view($id)->object();
+        $secret = $this->secretService->view($id)->object();
 
-        if(!isset($find->id)) {
+        if(!isset($secret->id)) {
             return response()->json(['response_code' => 400]);
         }
 
-        $find->response_code = 200;
+        $filesExternal = null;
+        if($secret->fileIds !== null) {
+            $filesExternal = $this->filesecretService->find($secret->fileIds)->object();
+            // delete all files from storage.
+            $this->filesecretService->delete($secret->fileIds);
+        }
 
+        unset($secret->fileIds); // not needed for UI...
+        $secret->files = $filesExternal;
+        $secret->response_code = 200;
+
+        // delete the secret itself.
         $this->secretService->delete($id)->object();
 
-        return response()->json($find);
+        return response()->json($secret);
     }
 
     /**
