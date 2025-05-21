@@ -123,7 +123,7 @@ class SecretController extends Controller
 
         $secret = $this->secretService->view($id)->object();
 
-        if($secret === null) {
+        if(!isset($secret->id)) {
             return response()->json(['response_code' => 400]);
         }
 
