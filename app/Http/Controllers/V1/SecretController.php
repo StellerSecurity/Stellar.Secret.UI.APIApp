@@ -119,9 +119,21 @@ class SecretController extends Controller
             return response()->json(['response_code' => 400]);
         }
 
-        $delete = $this->secretService->delete(
-            hash("sha512", $id)
-        )->object();
+        $id = hash("sha512", $id);
+
+        $secret = $this->secretService->view($id)->object();
+
+        if($secret === null) {
+            return response()->json(['response_code' => 400]);
+        }
+
+        if($secret->fileIds !== null) {
+            $filesExternal = $this->filesecretService->find($secret->fileIds)->object();
+            // delete all files from storage.
+            $this->filesecretService->delete($secret->fileIds);
+        }
+
+        $delete = $this->secretService->delete($id)->object();
 
         return response()->json($delete);
     }
