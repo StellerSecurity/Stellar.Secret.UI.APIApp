@@ -19,7 +19,8 @@ Route::prefix('v1')->group(function () {
     Route::prefix('secretcontroller')->group(function () {
         Route::controller(\App\Http\Controllers\V1\SecretController::class)->group(function () {
             Route::post('add', 'add');
-            Route::get('secret', 'view');
+            Route::get('secret', 'view'); // remove this in the future.
+            Route::post('secret', 'view');
             Route::delete('delete', 'delete');
         });
     });
