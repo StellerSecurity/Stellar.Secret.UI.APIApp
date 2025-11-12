@@ -86,9 +86,9 @@ class SecretController extends Controller
             'files'         => $files
         ];
 
-        $secret = $this->secretService->add($data)->object();
+        $this->secretService->add($data)->object();
 
-        return response()->json($secret);
+        return response()->json([]);
     }
 
 
