@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('throttle:30,1')->group(function () {
+Route::middleware('throttle:15,1')->group(function () {
     Route::prefix('v1')->group(function () {
 
         Route::prefix('secretcontroller')->group(function () {

@@ -36,19 +36,22 @@ class SecretController extends Controller
             return response()->json(['response_code' => 400]);
         }
 
+        if (strlen($id) < 16) {
+            return response()->json(['response_code' => 400, 'response_message' => 'id too short'], 400);
+        }
+
         if(empty($message)) {
             return response()->json(['response_code' => 400]);
         }
 
         // in hours.
-        $expires_at = (int) $request->input('expires_at');
+        $hours = (int) $request->input('expires_at');
 
-        // if none is set, expire in 7 days.
-        if($expires_at <= 0) {
-            $expires_at = 24 * $this->default_expire_message_in_days;
+        if ($hours <= 0) {
+            $hours = 24 * $this->default_expire_message_in_days;
         }
 
-        $expires_at = Carbon::createFromFormat('Y-m-d H:i:s', date("Y-m-d H:i:s"))->addHours($expires_at);
+        $expires_at = now()->addHours($hours);
 
         // the difference between V1 and V2 is that the client-side (app) has the hashed password.
         // in V1 we hashed it on the API-side, now the UI does it. (if the user has set the pw).
@@ -86,9 +89,13 @@ class SecretController extends Controller
             'files'         => $files
         ];
 
-        $this->secretService->add($data)->object();
+        $secret = $this->secretService->add($data)->object();
 
-        return response()->json([]);
+        if ($secret->failed()) {
+            return response()->json(['response_code' => 500], 500);
+        }
+
+        return response()->json($secret);
     }
 
 
