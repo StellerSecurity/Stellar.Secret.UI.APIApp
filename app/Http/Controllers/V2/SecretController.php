@@ -4,11 +4,8 @@ namespace App\Http\Controllers\V2;
 
 use App\Http\Controllers\Controller;
 use App\Services\SecretService;
-use Carbon\Carbon;
-use http\Env\Response;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Str;
 
 class SecretController extends Controller
 {
@@ -89,13 +86,13 @@ class SecretController extends Controller
             'files'         => $files
         ];
 
-        $secret = $this->secretService->add($data)->object();
+        $secret = $this->secretService->add($data);
 
         if ($secret->failed()) {
             return response()->json(['response_code' => 500], 500);
         }
 
-        return response()->json($secret);
+        return response()->json($secret->object());
     }
 
 
