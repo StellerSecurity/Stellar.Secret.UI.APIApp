@@ -74,37 +74,50 @@ class SecretController extends Controller
      */
     public function view(Request $request): JsonResponse
     {
-
         $id = $request->input('id');
 
-        if($id === null) {
-            return response()->json(['response_code' => 400]);
+        if ($id === null || !is_string($id) || strlen($id) < 16) {
+            return response()->json(['response_code' => 400], 400);
         }
 
-        $id = hash("sha512", $id);
+        // hash raw secret_id to match stored id
+        $hashedId = hash('sha512', $id);
 
-        $secret = $this->secretService->view($id)->object();
+        $secretResponse = $this->secretService->view($hashedId);
 
-        if(!isset($secret->id)) {
-            return response()->json(['response_code' => 400]);
+        if ($secretResponse->failed()) {
+            return response()->json(['response_code' => 400], 400);
+        }
+
+        $secret = $secretResponse->object();
+
+        if (!isset($secret->id)) {
+            return response()->json(['response_code' => 400], 400);
         }
 
         $filesExternal = null;
-        if($secret->fileIds !== null) {
-            $filesExternal = $this->filesecretService->find($secret->fileIds)->object();
-            // delete all files from storage.
+
+        if (!empty($secret->fileIds)) {
+            $filesResponse = $this->filesecretService->find($secret->fileIds);
+
+            if (!$filesResponse->failed()) {
+                $filesExternal = $filesResponse->object();
+            }
+
+            // best-effort delete of external files
             $this->filesecretService->delete($secret->fileIds);
         }
 
-        unset($secret->fileIds); // not needed for UI...
+        unset($secret->fileIds);
         $secret->files = $filesExternal;
         $secret->response_code = 200;
 
-        // delete the secret itself.
-        $this->secretService->delete($id)->object();
+        // delete the secret itself (best-effort)
+        $this->secretService->delete($hashedId)->object();
 
         return response()->json($secret);
     }
+
 
     /**
      * @param Request $request

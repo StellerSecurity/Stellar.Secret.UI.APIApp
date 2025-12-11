@@ -9,7 +9,6 @@ use Illuminate\Http\Request;
 
 class SecretController extends Controller
 {
-
     private SecretService $secretService;
 
     private int $default_expire_message_in_days = 7;
@@ -25,20 +24,24 @@ class SecretController extends Controller
      */
     public function add(Request $request): JsonResponse
     {
+        $id = $request->input('id');
+        $message = $request->input('message');
 
-        $id = $request->input("id");
-        $message = $request->input("message");
-
-        if($id === null) {
-            return response()->json(['response_code' => 400]);
+        // id validation
+        if ($id === null) {
+            return response()->json(['response_code' => 400], 400);
         }
 
-        if (strlen($id) < 16) {
-            return response()->json(['response_code' => 400, 'response_message' => 'id too short'], 400);
+        if (!is_string($id) || strlen($id) < 16) {
+            return response()->json([
+                'response_code'    => 400,
+                'response_message' => 'id too short',
+            ], 400);
         }
 
-        if(empty($message)) {
-            return response()->json(['response_code' => 400]);
+        // message must be non-empty (ciphertext from client)
+        if (empty($message) || !is_string($message)) {
+            return response()->json(['response_code' => 400], 400);
         }
 
         // in hours.
@@ -50,40 +53,38 @@ class SecretController extends Controller
 
         $expires_at = now()->addHours($hours);
 
-        // the difference between V1 and V2 is that the client-side (app) has the hashed password.
-        // in V1 we hashed it on the API-side, now the UI does it. (if the user has set the pw).
+        // in V2 the UI sends hashed password (or null)
         $password = $request->input('password');
+
+        if ($password !== null && !is_string($password)) {
+            return response()->json(['response_code' => 400], 400);
+        }
 
         // file upload, the UI will send ID + Content.
         $files = $request->input('files');
 
-        // not an array of files, something is odd.
-        if($files !== null && !is_array($files)) {
-            return response()->json(['response_code' => 518]);
-        }
-
-        if($files !== null) {
-            if(!is_array($files)) {
-                return response()->json(['response_code' => 518]);
+        if ($files !== null) {
+            if (!is_array($files)) {
+                return response()->json(['response_code' => 518], 400);
             }
 
-            foreach($files as $file) {
-                if(!isset($file['id'])) {
-                    return response()->json(['response_code' => 519]);
+            foreach ($files as $file) {
+                if (!isset($file['id']) || !is_string($file['id'])) {
+                    return response()->json(['response_code' => 519], 400);
                 }
 
-                if(!isset($file['content'])) {
-                    return response()->json(['response_code' => 520]);
+                if (!isset($file['content']) || !is_string($file['content'])) {
+                    return response()->json(['response_code' => 520], 400);
                 }
             }
         }
 
         $data = [
-            'id'            => $id,
-            'message'       => $message,
-            'expires_at'    => $expires_at,
-            'password'      => $password,
-            'files'         => $files
+            'id'         => $id,
+            'message'    => $message,
+            'expires_at' => $expires_at,
+            'password'   => $password,
+            'files'      => $files,
         ];
 
         $secret = $this->secretService->add($data);
@@ -94,6 +95,4 @@ class SecretController extends Controller
 
         return response()->json($secret->object());
     }
-
-
 }

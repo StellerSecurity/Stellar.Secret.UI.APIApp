@@ -34,7 +34,7 @@ class SecretService
     public function view(string $id): PromiseInterface|Response
     {
         $response = Http::retry(5, 100)->withBasicAuth(getenv($this->usernameKey),getenv($this->passwordKey))
-            ->get($this->baseUrl . "v1/secretcontroller/secret?id={$id}");
+            ->post($this->baseUrl . "v1/secretcontroller/view", ['id' => $id]);
         return $response;
     }
 
