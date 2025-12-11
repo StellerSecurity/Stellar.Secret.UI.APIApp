@@ -86,13 +86,13 @@ class SecretController extends Controller
         $secretResponse = $this->secretService->view($hashedId);
 
         if ($secretResponse->failed()) {
-            return response()->json(['response_code' => 400], 400);
+            return response()->json(['response_code' => 400]);
         }
 
         $secret = $secretResponse->object();
 
         if (!isset($secret->id)) {
-            return response()->json(['response_code' => 400], 400);
+            return response()->json(['response_code' => 400]);
         }
 
         $filesExternal = null;
