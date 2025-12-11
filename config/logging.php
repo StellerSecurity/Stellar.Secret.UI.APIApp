@@ -58,11 +58,6 @@ return [
             'ignore_exceptions' => false,
         ],
 
-        'app-insights' => [
-            'driver' => 'custom',
-            'via' => Mondago\ApplicationInsights\Logging\CreateApplicationInsightsLogger::class,
-        ],
-
         'single' => [
             'driver' => 'single',
             'path' => storage_path('logs/laravel.log'),
