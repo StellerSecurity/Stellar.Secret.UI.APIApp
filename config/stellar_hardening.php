@@ -29,6 +29,7 @@ return [
 
     'host_contains' => [
         'stellarsecurity.com',
+        'stellarsecret.io',
         'stellarsecurity.ch',
     ],
 
