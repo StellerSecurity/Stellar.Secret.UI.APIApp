@@ -10,7 +10,7 @@
         "laravel/framework": "^10.10",
         "laravel/sanctum": "^3.3",
         "laravel/tinker": "^2.8",
-        "stellarsecurity/application-insights-laravel": "^1.0",
+        "stellarsecurity/application-insights-laravel": "^1.0.8",
         "stellarsecurity/laravel-hardening": "^1.0"
     },
     "require-dev": {
