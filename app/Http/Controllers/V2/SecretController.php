@@ -51,6 +51,16 @@ class SecretController extends Controller
             return response()->json(['response_code' => 400], 400);
         }
 
+        // Accept encryption_version (default v1 if missing)
+        $encryptionVersion = strtolower(trim((string) $request->input('encryption_version', 'v1')));
+
+        if (! in_array($encryptionVersion, ['v1', 'v2'], true)) {
+            return response()->json([
+                'response_code'    => 400,
+                'response_message' => 'invalid encryption_version',
+            ], 400);
+        }
+
         // Expiration is sent in hours from the UI. If invalid or <= 0, fall back to default.
         $hours = (int) $request->input('expires_at');
 
@@ -83,11 +93,12 @@ class SecretController extends Controller
         }
 
         $data = [
-            'id'           => $id,
-            'message'      => $message,
-            'expires_at'   => $expires_at,
-            'has_password' => $hasPassword,
-            'files'        => $files,
+            'id'                 => $id,
+            'message'            => $message,
+            'expires_at'         => $expires_at,
+            'has_password'       => $hasPassword,
+            'encryption_version' => $encryptionVersion,
+            'files'              => $files,
         ];
 
         $secret = $this->secretService->add($data);
@@ -98,4 +109,5 @@ class SecretController extends Controller
 
         return response()->json($secret->object());
     }
+
 }
