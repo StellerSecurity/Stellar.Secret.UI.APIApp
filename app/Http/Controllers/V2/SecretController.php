@@ -11,7 +11,7 @@ class SecretController extends Controller
 {
     private SecretService $secretService;
 
-    // Default secret lifetime in days if the client doesn't send a valid value
+    // Default secret lifetime in days if the client doesn't send a valid value.
     private int $default_expire_message_in_days = 7;
 
     public function __construct(SecretService $secretService)
@@ -35,9 +35,12 @@ class SecretController extends Controller
         $message = $request->input('message');
         $files = $request->input('files');
 
-        // Basic ID validation
+        // Basic ID validation.
         if ($id === null) {
-            return response()->json(['response_code' => 400], 400);
+            return response()->json([
+                'response_code' => 400,
+                'response_message' => 'id required',
+            ], 400);
         }
 
         if (! is_string($id) || strlen($id) < 16) {
@@ -50,20 +53,32 @@ class SecretController extends Controller
         // Files are optional, but if present they must be valid.
         if ($files !== null) {
             if (! is_array($files)) {
-                return response()->json(['response_code' => 518], 400);
+                return response()->json([
+                    'response_code' => 518,
+                    'response_message' => 'files must be an array',
+                ], 400);
             }
 
             foreach ($files as $file) {
-                if (! isset($file['id']) || ! is_string($file['id'])) {
-                    return response()->json(['response_code' => 519], 400);
+                if (! is_array($file)) {
+                    return response()->json([
+                        'response_code' => 518,
+                        'response_message' => 'file item must be an object',
+                    ], 400);
                 }
 
-                if (! isset($file['content']) || ! is_string($file['content'])) {
-                    return response()->json(['response_code' => 520], 400);
+                if (! isset($file['id']) || ! is_string($file['id']) || $file['id'] === '') {
+                    return response()->json([
+                        'response_code' => 519,
+                        'response_message' => 'file id required',
+                    ], 400);
                 }
 
-                if ($file['content'] === '') {
-                    return response()->json(['response_code' => 520], 400);
+                if (! isset($file['content']) || ! is_string($file['content']) || $file['content'] === '') {
+                    return response()->json([
+                        'response_code' => 520,
+                        'response_message' => 'file content required',
+                    ], 400);
                 }
             }
         }
@@ -79,12 +94,13 @@ class SecretController extends Controller
             ], 400);
         }
 
-        // Normalize empty message to null for file-only secrets.
+        // Normalize empty message to an empty string for file-only secrets.
+        // The base API/database expects message to be non-null.
         if (! $hasMessage) {
-            $message = null;
+            $message = '';
         }
 
-        // Accept encryption_version (default v1 if missing)
+        // Accept encryption_version. Default to v1 if missing.
         $encryptionVersion = strtolower(trim((string) $request->input('encryption_version', 'v1')));
 
         if (! in_array($encryptionVersion, ['v1', 'v2'], true)) {
