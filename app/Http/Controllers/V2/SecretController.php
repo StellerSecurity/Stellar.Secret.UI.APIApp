@@ -31,8 +31,9 @@ class SecretController extends Controller
      */
     public function add(Request $request): JsonResponse
     {
-        $id      = $request->input('id');
+        $id = $request->input('id');
         $message = $request->input('message');
+        $files = $request->input('files');
 
         // Basic ID validation
         if ($id === null) {
@@ -41,14 +42,46 @@ class SecretController extends Controller
 
         if (! is_string($id) || strlen($id) < 16) {
             return response()->json([
-                'response_code'    => 400,
+                'response_code' => 400,
                 'response_message' => 'id too short',
             ], 400);
         }
 
-        // Message must be non-empty (ciphertext from client)
-        if (empty($message) || ! is_string($message)) {
-            return response()->json(['response_code' => 400], 400);
+        // Files are optional, but if present they must be valid.
+        if ($files !== null) {
+            if (! is_array($files)) {
+                return response()->json(['response_code' => 518], 400);
+            }
+
+            foreach ($files as $file) {
+                if (! isset($file['id']) || ! is_string($file['id'])) {
+                    return response()->json(['response_code' => 519], 400);
+                }
+
+                if (! isset($file['content']) || ! is_string($file['content'])) {
+                    return response()->json(['response_code' => 520], 400);
+                }
+
+                if ($file['content'] === '') {
+                    return response()->json(['response_code' => 520], 400);
+                }
+            }
+        }
+
+        $hasMessage = is_string($message) && $message !== '';
+        $hasFiles = is_array($files) && count($files) > 0;
+
+        // A secret must contain either an encrypted message or at least one encrypted file.
+        if (! $hasMessage && ! $hasFiles) {
+            return response()->json([
+                'response_code' => 400,
+                'response_message' => 'message or file required',
+            ], 400);
+        }
+
+        // Normalize empty message to null for file-only secrets.
+        if (! $hasMessage) {
+            $message = null;
         }
 
         // Accept encryption_version (default v1 if missing)
@@ -56,7 +89,7 @@ class SecretController extends Controller
 
         if (! in_array($encryptionVersion, ['v1', 'v2'], true)) {
             return response()->json([
-                'response_code'    => 400,
+                'response_code' => 400,
                 'response_message' => 'invalid encryption_version',
             ], 400);
         }
@@ -73,41 +106,25 @@ class SecretController extends Controller
         // UI only tells us whether a password was used. The actual password never leaves the client.
         $hasPassword = (bool) $request->input('has_password', false);
 
-        // File upload: UI sends ID + content.
-        $files = $request->input('files');
-
-        if ($files !== null) {
-            if (! is_array($files)) {
-                return response()->json(['response_code' => 518], 400);
-            }
-
-            foreach ($files as $file) {
-                if (! isset($file['id']) || ! is_string($file['id'])) {
-                    return response()->json(['response_code' => 519], 400);
-                }
-
-                if (! isset($file['content']) || ! is_string($file['content'])) {
-                    return response()->json(['response_code' => 520], 400);
-                }
-            }
-        }
-
         $data = [
-            'id'                 => $id,
-            'message'            => $message,
-            'expires_at'         => $expires_at,
-            'has_password'       => $hasPassword,
+            'id' => $id,
+            'message' => $message,
+            'expires_at' => $expires_at,
+            'has_password' => $hasPassword,
             'encryption_version' => $encryptionVersion,
-            'files'              => $files,
+            'files' => $files,
         ];
 
         $secret = $this->secretService->add($data);
 
         if ($secret->failed()) {
-            return response()->json(['response_code' => 500], 500);
+            return response()->json([
+                'response_code' => 500,
+                'upstream_status' => method_exists($secret, 'status') ? $secret->status() : null,
+                'upstream_body' => method_exists($secret, 'body') ? $secret->body() : null,
+            ], 500);
         }
 
         return response()->json($secret->object());
     }
-
 }
