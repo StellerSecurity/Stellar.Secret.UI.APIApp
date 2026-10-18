@@ -1,0 +1,221 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2024-05-01",
+      "name": "stellar-secret-base-api-nsg",
+      "location": "swedencentral",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "AllowAuthorizedCaller",
+            "properties": {
+              "priority": 100,
+              "direction": "Inbound",
+              "access": "Allow",
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "10.87.0.0/26",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "10.87.0.128/27",
+              "destinationPortRange": "443"
+            }
+          },
+          {
+            "name": "DenyAllOtherInbound",
+            "properties": {
+              "priority": 200,
+              "direction": "Inbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "apiVersion": "2024-05-01",
+      "name": "stellar-secret-mysql-nsg",
+      "location": "swedencentral",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "AllowAuthorizedCaller",
+            "properties": {
+              "priority": 100,
+              "direction": "Inbound",
+              "access": "Allow",
+              "protocol": "Tcp",
+              "sourceAddressPrefix": "10.87.0.64/26",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "10.87.0.160/27",
+              "destinationPortRange": "3306"
+            }
+          },
+          {
+            "name": "DenyAllOtherInbound",
+            "properties": {
+              "priority": 200,
+              "direction": "Inbound",
+              "access": "Deny",
+              "protocol": "*",
+              "sourceAddressPrefix": "*",
+              "sourcePortRange": "*",
+              "destinationAddressPrefix": "*",
+              "destinationPortRange": "*"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "apiVersion": "2024-05-01",
+      "name": "stellar-secret-private-vnet",
+      "location": "swedencentral",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/networkSecurityGroups', 'stellar-secret-base-api-nsg')]",
+        "[resourceId('Microsoft.Network/networkSecurityGroups', 'stellar-secret-mysql-nsg')]"
+      ],
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "10.87.0.0/24"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "ui-api-integration",
+            "properties": {
+              "addressPrefix": "10.87.0.0/26",
+              "delegations": [
+                {
+                  "name": "appService",
+                  "properties": {
+                    "serviceName": "Microsoft.Web/serverFarms"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "base-api-integration",
+            "properties": {
+              "addressPrefix": "10.87.0.64/26",
+              "delegations": [
+                {
+                  "name": "appService",
+                  "properties": {
+                    "serviceName": "Microsoft.Web/serverFarms"
+                  }
+                }
+              ]
+            }
+          },
+          {
+            "name": "base-api-endpoint",
+            "properties": {
+              "addressPrefix": "10.87.0.128/27",
+              "privateEndpointNetworkPolicies": "Enabled",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'stellar-secret-base-api-nsg')]"
+              }
+            }
+          },
+          {
+            "name": "mysql-endpoint",
+            "properties": {
+              "addressPrefix": "10.87.0.160/27",
+              "privateEndpointNetworkPolicies": "Enabled",
+              "networkSecurityGroup": {
+                "id": "[resourceId('Microsoft.Network/networkSecurityGroups', 'stellar-secret-mysql-nsg')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2020-06-01",
+      "name": "privatelink.azurewebsites.net",
+      "location": "global",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2020-06-01",
+      "name": "privatelink.azurewebsites.net/stellar-secret-vnet",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.azurewebsites.net')]",
+        "[resourceId('Microsoft.Network/virtualNetworks', 'stellar-secret-private-vnet')]"
+      ],
+      "properties": {
+        "registrationEnabled": false,
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', 'stellar-secret-private-vnet')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones",
+      "apiVersion": "2020-06-01",
+      "name": "privatelink.mysql.database.azure.com",
+      "location": "global",
+      "properties": {}
+    },
+    {
+      "type": "Microsoft.Network/privateDnsZones/virtualNetworkLinks",
+      "apiVersion": "2020-06-01",
+      "name": "privatelink.mysql.database.azure.com/stellar-secret-vnet",
+      "location": "global",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateDnsZones', 'privatelink.mysql.database.azure.com')]",
+        "[resourceId('Microsoft.Network/virtualNetworks', 'stellar-secret-private-vnet')]"
+      ],
+      "properties": {
+        "registrationEnabled": false,
+        "virtualNetwork": {
+          "id": "[resourceId('Microsoft.Network/virtualNetworks', 'stellar-secret-private-vnet')]"
+        }
+      }
+    },
+    {
+      "type": "Microsoft.Resources/deployments",
+      "apiVersion": "2022-09-01",
+      "name": "stellar-secret-base-plan",
+      "resourceGroup": "stellersubscriptionapiprod_group",
+      "properties": {
+        "mode": "Incremental",
+        "template": {
+          "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "resources": [
+            {
+              "type": "Microsoft.Web/serverfarms",
+              "apiVersion": "2023-12-01",
+              "name": "stellar-secret-base-b1-prod",
+              "location": "swedencentral",
+              "kind": "linux",
+              "sku": {
+                "name": "B1",
+                "tier": "Basic",
+                "capacity": 1
+              },
+              "properties": {
+                "reserved": true
+              }
+            }
+          ]
+        }
+      }
+    }
+  ]
+}

@@ -46,6 +46,10 @@ stages:
       workingDirectory: $(rootFolder)
       displayName: 'Composer install'
 
+    - script: php vendor/bin/phpunit --no-coverage tests/Feature/SchedulerTest.php
+      workingDirectory: $(rootFolder)
+      displayName: 'Test private-base scheduler proxy'
+
     - task: ArchiveFiles@2
       displayName: 'Archive files'
       inputs:

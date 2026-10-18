@@ -1,0 +1,86 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "resources": [
+    {
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2024-05-01",
+      "name": "stellar-secret-base-api-pe",
+      "location": "swedencentral",
+      "properties": {
+        "subnet": {
+          "id": "/subscriptions/3654294d-b816-4cc6-be04-c7d9dd7bb1d0/resourceGroups/stellar-secret-private-network-prod/providers/Microsoft.Network/virtualNetworks/stellar-secret-private-vnet/subnets/base-api-endpoint"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "stellar-secret-base-api-pe",
+            "properties": {
+              "privateLinkServiceId": "/subscriptions/3654294d-b816-4cc6-be04-c7d9dd7bb1d0/resourceGroups/stellersubscriptionapiprod_group/providers/Microsoft.Web/sites/stellarSecretApiProd",
+              "groupIds": [
+                "sites"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2024-05-01",
+      "name": "stellar-secret-base-api-pe/default",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateEndpoints', 'stellar-secret-base-api-pe')]"
+      ],
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "base-api",
+            "properties": {
+              "privateDnsZoneId": "/subscriptions/3654294d-b816-4cc6-be04-c7d9dd7bb1d0/resourceGroups/stellar-secret-private-network-prod/providers/Microsoft.Network/privateDnsZones/privatelink.azurewebsites.net"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints",
+      "apiVersion": "2024-05-01",
+      "name": "stellar-secret-mysql-pe",
+      "location": "swedencentral",
+      "properties": {
+        "subnet": {
+          "id": "/subscriptions/3654294d-b816-4cc6-be04-c7d9dd7bb1d0/resourceGroups/stellar-secret-private-network-prod/providers/Microsoft.Network/virtualNetworks/stellar-secret-private-vnet/subnets/mysql-endpoint"
+        },
+        "privateLinkServiceConnections": [
+          {
+            "name": "stellar-secret-mysql-pe",
+            "properties": {
+              "privateLinkServiceId": "/subscriptions/3654294d-b816-4cc6-be04-c7d9dd7bb1d0/resourceGroups/stellersubscriptionapiprod_group/providers/Microsoft.DBforMySQL/flexibleServers/stellarsecretdbprod",
+              "groupIds": [
+                "mysqlServer"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/privateEndpoints/privateDnsZoneGroups",
+      "apiVersion": "2024-05-01",
+      "name": "stellar-secret-mysql-pe/default",
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/privateEndpoints', 'stellar-secret-mysql-pe')]"
+      ],
+      "properties": {
+        "privateDnsZoneConfigs": [
+          {
+            "name": "mysql",
+            "properties": {
+              "privateDnsZoneId": "/subscriptions/3654294d-b816-4cc6-be04-c7d9dd7bb1d0/resourceGroups/stellar-secret-private-network-prod/providers/Microsoft.Network/privateDnsZones/privatelink.mysql.database.azure.com"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -19,6 +19,7 @@ Route::middleware('throttle:15,1')->group(function () {
     Route::prefix('v1')->group(function () {
 
         Route::prefix('secretcontroller')->group(function () {
+            Route::get('scheduler', \App\Http\Controllers\V1\SchedulerController::class);
             Route::controller(\App\Http\Controllers\V1\SecretController::class)->group(function () {
                 Route::post('add', 'add');
                 Route::get('secret', 'view'); // remove this in the future.
